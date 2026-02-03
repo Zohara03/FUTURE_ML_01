@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales Forecast Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        canvas { max-width: 900px; max-height: 500px; }
+    </style>
+</head>
+<body>
+    <h2>Sales Forecast</h2>
+    <canvas id="forecastChart"></canvas>
+
+    <script>
+        async function loadForecast() {
+            try {
+                const response = await fetch("/forecast");
+                const data = await response.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    document.body.insertAdjacentHTML("beforeend", "<p>No forecast data available.</p>");
+                    return;
+                }
+            const labels = data.map(d => d.date);
+            const forecast = data.map(d => d.forecast);
+            const lower = data.map(d => d.lower_bound);
+            const upper = data.map(d => d.upper_bound);
+
+            new Chart(document.getElementById("forecastChart"), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Forecast',
+                            data: forecast,
+                            borderColor: 'blue',
+                            fill: false
+                        },
+                        {
+                            label: 'Lower Bound',
+                            data: lower,
+                            borderColor: 'red',
+                            borderDash: [5,5],
+                            fill: false
+                        },
+                        {
+                            label: 'Upper Bound',
+                            data: upper,
+                            borderColor: 'green',
+                            borderDash: [5,5],
+                            fill: false
+                        }
+                    ]
+                },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (err) {
+                console.error("Error loading forecast:", err);
+                document.body.insertAdjacentHTML("beforeend", "<p>Error loading forecast data.</p>");
+            }
+        }
+        loadForecast();
+    </script>
+</body>
+</html>
